@@ -13,6 +13,7 @@ Estamos usando a biblioteca SQLModel, que junta duas coisas em uma só classe:
 Ou seja: uma classe só = o "formato" dos dados E a tabela do banco.
 """
 
+from pyclbr import Class
 from typing import Optional
 from sqlmodel import SQLModel, Field
 
@@ -67,3 +68,24 @@ class SalaUpdate(SQLModel):
     capacidade: Optional[int] = None
     preco: Optional[float] = None
     ativa: Optional[bool] = None
+
+
+
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    email: str
+    password: str
+    cpf: str
+
+class UserCreate(SQLModel):
+    name: str
+    email: str
+    password: str
+    cpf: str
+
+class UserUpdate(SQLModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    cpf: Optional[str] = None

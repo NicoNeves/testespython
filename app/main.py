@@ -20,7 +20,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlmodel import Session, select    
 
 from app.database import criar_banco_e_tabelas, obter_sessao
-from app.models import Sala, SalaCreate, SalaUpdate
+from app.models import Sala, SalaCreate, SalaUpdate, User, UserCreate, UserUpdate
 
 
 # "app" é a instância principal da nossa API. É nela que penduramos
@@ -134,3 +134,8 @@ def deletar_sala(sala_id: int, sessao: Session = Depends(obter_sessao)):
     sessao.commit()
 
     return {"mensagem": f"Sala {sala_id} deletada com sucesso."}
+
+@app.get("users", response_model=List[User])
+def listar_users( sessao: Session = Depends(obter_sessao)):
+    users = sessao.exec(select(User)).all()
+    return users
