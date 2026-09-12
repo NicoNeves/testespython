@@ -1,18 +1,14 @@
 """
-main.py
--------
 Este é o arquivo principal da API. Aqui vivem as ROTAS: os endereços
-que o Bubble (ou o Postman, ou o navegador) vai chamar para criar,
+que o Bubble vai chamar para criar,
 listar, atualizar e deletar salas.
 
 Como rodar:
-    1. pip install -r requirements.txt
-    2. uvicorn main:app --reload
+    1. pip install -r requirements.txt caso ainda não tenha instalado as dependências
+    2. uvicorn app.main:app --reload
     3. Abra http://127.0.0.1:8000/docs no navegador
 
-Esse /docs é uma tela AUTOMÁTICA que o FastAPI gera, onde dá pra
-testar cada rota clicando em botões -- sem precisar nem do Postman
-pra começar a testar.
+Esse /docs é uma tela AUTOMÁTICA que o FastAPI gera, onde dá pra testar cada rota clicando em botões
 """
 
 from typing import List
@@ -23,27 +19,17 @@ from app.database import criar_banco_e_tabelas, obter_sessao
 from app.models import Sala, SalaCreate, SalaUpdate, User, UserCreate, UserUpdate
 
 
-# "app" é a instância principal da nossa API. É nela que penduramos
-# todas as rotas abaixo.
+# "app" é a instância principal da nossa API. É nela que penduramos todas as rotas abaixo.
 app = FastAPI()
 
 
 @app.on_event("startup")
 def ao_iniciar():
-    """
-    Esse decorador (@app.on_event("startup")) diz ao FastAPI:
-    "antes de começar a aceitar requisições, rode esta função uma vez".
-    Usamos isso pra garantir que o arquivo salas.db e a tabela existam.
-    """
+    #Esse decorador (@app.on_event("startup")) diz ao FastAPI: "antes de começar a aceitar requisições, rode esta função uma vez". pra garantir que o arquivo salas.db e a tabela existam.
     criar_banco_e_tabelas()
 
 
-# CREATE - criar uma nova sala
-
-# @app.post(...) diz: "essa função responde a requisições HTTP do tipo
-# POST, no endereço /salas". POST é o verbo usado, por convenção,
-# para CRIAR alguma coisa nova.
-#
+# @app.post(...) diz: "essa função responde a requisições HTTP do tipo POST, no endereço /salas". POST é o verbo usadopara CRIAR alguma coisa nova.
 # "sala: SalaCreate" diz ao FastAPI: "espere um JSON no corpo da
 # requisição, no formato da classe SalaCreate (nome, descricao,
 # capacidade, preco) -- e valide isso automaticamente pra mim".
@@ -135,7 +121,16 @@ def deletar_sala(sala_id: int, sessao: Session = Depends(obter_sessao)):
 
     return {"mensagem": f"Sala {sala_id} deletada com sucesso."}
 
-@app.get("users", response_model=List[User])
+
+@app.post("/users", response_model=User)
+def criar_user(user: UserCreate, sessao: Session = Depends(obter_sessao)):
+    novo_usuario = User.model_validate(user)
+    sessao.add(novo_usuario)
+    sessao.commit()
+    sessao.refresh(novo_usuario)
+    return novo_usuario
+
+@app.get("/users", response_model=List[User])
 def listar_users( sessao: Session = Depends(obter_sessao)):
     users = sessao.exec(select(User)).all()
     return users
